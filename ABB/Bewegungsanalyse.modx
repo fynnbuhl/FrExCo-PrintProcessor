@@ -1,0 +1,125 @@
+MODULE Bewegungsanalyse
+    PROC AnalyzeCircle()
+        VAR robtarget pCenter;
+        VAR robtarget pCurrent;
+        VAR jointtarget jtResult;
+        VAR num radius := 20;
+        VAR num ang;
+        VAR num startOffset := 0;
+        VAR iodev logFile;
+        VAR string logLine;
+        VAR bool bReachOK;
+        VAR num nMoveCount1 := 0;
+        VAR num nMoveCount2 := 0;
+
+        pCenter := [[315, 315, 55], [0, 1, 0, 0], [0, 0, 0, 0], [9E+09, 9E+09, 9E+09, 9E+09, 9E+09, 9E+09]];
+
+        ! Öffnen der Datei
+        Open "HOME:RotationAnalysis_Results.csv", logFile \Write;
+        Write logFile, "Winkel;Tool;J1;J2;J3;J4;J5;J6";
+
+        ConfL \Off; 
+
+        ! ==========================================
+        ! SCHLEIFE 1: ANALYSE FÜR T1
+        ! ==========================================
+        ! 1. Startposition mit T1 anfahren und Achse 6 nullen
+        MoveJ pCenter, v50, fine, T1 \WObj:=DruckbettV4;
+        jtResult := CJointT(); 
+        !jtResult.robax.rax_6 := 0; 
+        MoveAbsJ jtResult, v50, fine, T1;
+
+        FOR ang FROM 0 TO 720 STEP 1 DO
+            pCurrent := pCenter;
+            pCurrent.trans.x := pCenter.trans.x + radius * Cos(ang + startOffset);
+            pCurrent.trans.y := pCenter.trans.y + radius * Sin(ang + startOffset);
+            pCurrent.rot := OrientZYX(ang+startOffset-90, -90, 0);
+
+            TEST_REACHABILITY_T1 pCurrent, jtResult, bReachOK;   
+
+            IF bReachOK THEN
+                ! Bewegung ausführen, damit die physische Achsstellung für die nächste ConfL \Off Berechnung stimmt
+                IF nMoveCount1 < 10 THEN
+                    MoveL pCurrent, v50, z0, T1 \WObj:=DruckbettV4;
+                    nMoveCount1 := nMoveCount1 + 1; ! Zähler erhöhen
+                ENDIF 
+                !MoveL pCurrent, v100, z1, T1 \WObj:=DruckbettV4;
+                
+                logLine := ValToStr(ang + startOffset) + ";T1;" + 
+                           ValToStr(jtResult.robax.rax_1) + ";" + 
+                           ValToStr(jtResult.robax.rax_2) + ";" + 
+                           ValToStr(jtResult.robax.rax_3) + ";" + 
+                           ValToStr(jtResult.robax.rax_4) + ";" + 
+                           ValToStr(jtResult.robax.rax_5) + ";" + 
+                           ValToStr(jtResult.robax.rax_6);
+            ELSE
+                logLine := ValToStr(ang + startOffset) + ";T1;0;0;0;0;0;0";
+            ENDIF
+            Write logFile, logLine;
+        ENDFOR
+
+        ! ==========================================
+        ! SCHLEIFE 2: ANALYSE FÜR T2
+        ! ==========================================
+        ! 2. Wieder zur Startposition fahren und Achsen für T2 entwirren/nullen
+        MoveJ pCenter, v50, fine, T2 \WObj:=DruckbettV4;
+        jtResult := CJointT(); 
+        jtResult.robax.rax_6 := 0; 
+        MoveAbsJ jtResult, v50, fine, T2;
+
+        FOR ang FROM 0 TO 720 STEP 1 DO
+            pCurrent := pCenter;
+            pCurrent.trans.x := pCenter.trans.x + radius * Cos(ang + startOffset);
+            pCurrent.trans.y := pCenter.trans.y + radius * Sin(ang + startOffset);
+            pCurrent.rot := OrientZYX(ang + startOffset, 90, -90); 
+
+            TEST_REACHABILITY_T2 pCurrent, jtResult, bReachOK;
+
+            IF bReachOK THEN
+                ! Bewegung ausführen
+                IF nMoveCount2 < 10 THEN
+                    MoveL pCurrent, v50, z0, T2 \WObj:=DruckbettV4;
+                    nMoveCount2 := nMoveCount2 + 1; ! Zähler erhöhen
+                ENDIF 
+                
+                
+                !MoveL pCurrent, v100, z1, T2 \WObj:=DruckbettV4;
+                
+                logLine := ValToStr(ang + startOffset) + ";T2;" + 
+                           ValToStr(jtResult.robax.rax_1) + ";" + 
+                           ValToStr(jtResult.robax.rax_2) + ";" + 
+                           ValToStr(jtResult.robax.rax_3) + ";" + 
+                           ValToStr(jtResult.robax.rax_4) + ";" + 
+                           ValToStr(jtResult.robax.rax_5) + ";" + 
+                           ValToStr(jtResult.robax.rax_6);
+            ELSE
+                logLine := ValToStr(ang + startOffset) + ";T2;0;0;0;0;0;0";
+            ENDIF
+            Write logFile, logLine;
+        ENDFOR
+
+        Close logFile;
+        ConfL \On;
+        ErrWrite \I, "Analyse beendet.", "Beide Tools separat geprüft. LOG gespeichert.";
+        Stop;
+    ERROR
+        ! Fängt Abstürze bei MoveL ab und setzt die Schleife fort
+        TRYNEXT;
+    ENDPROC
+
+    PROC TEST_REACHABILITY_T1(robtarget target, INOUT jointtarget joints, INOUT bool okFlag)
+        okFlag := TRUE;
+        joints := CalcJointT(target, T1 \WObj:=DruckbettV4);
+    ERROR
+        okFlag := FALSE;
+        RETURN;
+    ENDPROC
+
+    PROC TEST_REACHABILITY_T2(robtarget target, INOUT jointtarget joints, INOUT bool okFlag)
+        okFlag := TRUE;
+        joints := CalcJointT(target, T2 \WObj:=DruckbettV4);
+    ERROR
+        okFlag := FALSE;
+        RETURN;
+    ENDPROC
+ENDMODULE
