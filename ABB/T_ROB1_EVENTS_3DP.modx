@@ -1,0 +1,117 @@
+MODULE T_ROB1_EVENTS_3DP
+    !****************************************************************************
+    !*
+    !*(c)Copyright 2023 ABB
+    !*
+    !*Any unauthorized use, reproduction, distribution,
+    !*or disclosure to third parties is strictly forbidden.
+    !*ABB reserves all rights regarding Intellectual Property Rights
+    !*
+    !****************************************************************************
+
+    PERS robtarget pRestart; !** Used when the print is restarted with "StartChoice" in "InitEvent". For use in "RestartPath" that is called from "StartChoice". **
+    PERS num nActiveLayer; !** Active (last printed) layer number. For use in "PostLayerEvent". **
+    
+    !*********************************************************************
+    !* Uncomment  "StartChoice" to enable choice for restart of process. *
+    !*********************************************************************
+    PROC InitEvent()
+        !StartChoice;
+    ENDPROC
+
+    !*********************************************************************************
+    !* For customer unique code that should be executed before the 3D printing starts.
+    !*********************************************************************************
+    PROC PrePartEvent()
+        RETURN ;
+    ENDPROC
+
+    !****************************************************************************************
+    !* For customer unique code that should be executed after the 3D printing has finished. *
+    !****************************************************************************************
+    PROC PostPartEvent()
+        Stop ;
+    ENDPROC
+
+    !***********************************************************************************************
+    !* For customer unique code that should be executed before each time the process is turned on. *
+    !***********************************************************************************************
+    PROC PreProcessEvent()
+        RETURN ;
+    ENDPROC
+
+    !***********************************************************************************************
+    !* For customer unique code that should be executed after each time the process is turned off. *
+    !***********************************************************************************************
+    PROC PostProcessEvent()
+        RETURN ;
+    ENDPROC
+
+    !**********************************************************************
+    !* For customer unique code that should be executed after each layer. *
+    !**********************************************************************
+    PROC PostLayerEvent()
+        RETURN ;
+    ENDPROC
+
+    !******************************************************************************************************************
+    !* For customer unique code that should be executed after all prints in the FlexPendant Print Queue are executed. *
+    !******************************************************************************************************************
+    PROC PostQueueEvent()
+        RETURN ;
+    ENDPROC
+
+    !******************************************************************************************************************
+    !* For customer unique code. Called by the command "UE1" in the G-code file. *
+    !* Funktion: Einschalten der Dosierung.
+    !******************************************************************************************************************
+     PROC UserEvent_1()
+        !InvertDO doDosieren_3DP;
+        StopMove;
+        SetDo doDosieren_3DP, 1;
+        ErrWrite \I, "UE1", "Starte Dosieren";
+        TPWrite "Starte Dosieren";
+        StartMove;
+    ENDPROC
+    !******************************************************************************************************************
+    !* For customer unique code. Called by the command "UE2" in the G-code file.  *
+    !* Funktion: Ausschalten der Dosierung.
+    !******************************************************************************************************************
+    PROC UserEvent_2()
+        StopMove;
+        SetDo doDosieren_3DP, 0;
+        ErrWrite \I, "UE2", "Stoppe Dosieren";
+        TPWrite "Stoppe Dosieren";
+        StartMove;
+    ENDPROC
+    !******************************************************************************************************************
+    !* For customer unique code. Called by the command "UE3" in the G-code file.  *
+    !******************************************************************************************************************
+    PROC UserEvent_3()
+        StopMove;
+        TPWrite "UE3";
+        ErrWrite \I, "UE3", "TBD";
+        StartMove;
+    ENDPROC
+    !******************************************************************************************************************
+    !* For customer unique code. Called by the command "UE4" in the G-code file.  *
+    !* Funktion: Pausieren des Druckvorgangs.
+    !******************************************************************************************************************
+    PROC UserEvent_4()
+        StopMove;
+        ErrWrite \I, "UE4", "Druck pausiert";
+        Stop;
+        TPWrite "Druck pausiert";
+        StartMove;
+    ENDPROC
+
+
+    !***********************************************************
+    !* Used together with "StartChoice" and restart of process.*
+    !***********************************************************
+    PROC RestartPath()
+        !** Add your move instruction(s) to the restart position here. **
+        !ConfL\Off;
+        !MoveL Offs(pRestart,0,0,100),v100,z1,tExtruder\WObj:=wobjSTN_1;
+    ENDPROC
+ENDMODULE

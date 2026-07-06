@@ -1,0 +1,36 @@
+MODULE T_ROB1_MAIN_3DP
+    !****************************************************************
+    !*
+    !*(c)Copyright 2023 ABB
+    !*
+    !*Any unauthorized use, reproduction, distribution,
+    !*or disclosure to third parties is strictly forbidden.
+    !*ABB reserves all rights regarding Intellectual Property Rights
+    !*
+    !****************************************************************
+    CONST robtarget HomeDruckbett := [[0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0], [9E+09, 9E+09, 9E+09, 9E+09, 9E+09, 9E+09]];
+    CONST robtarget AntOrigen := [[315, 315, 55], [0, 1, 0, 0], [0, 0, 0, 0], [9E+09, 9E+09, 9E+09, 9E+09, 9E+09, 9E+09]];
+    
+
+    ! Definition der Home-Position (Gelenkwinkel in Grad)
+    ! Achsen 1-4 und 6 stehen auf 0°, Achse 5 auf 30°.
+    ! Der Wert 9E+09 gibt an, dass keine externen Achsen verwendet werden.
+    CONST jointtarget jHome:=[[0,0,0,0,30,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    !CONST jointtarget jHomeHelix:=[[-60,25,25,-40,75,-215],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    !CONST jointtarget jHomeQuadHelix_V1:=[[-45,14,48,-65,60,-130],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget jHomeQuadHelix_V1:=[[-45,10,52,-85,39,-50],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    
+    !****************************************************************
+    !
+    !   This is the 3DP entry point, modify the "Home" position, and 
+    !   if needed add via points to the printing area before start.
+    !
+    !****************************************************************
+    PROC main()
+        !AnalyzeCircle;
+        MoveAbsJ jHomeQuadHelix_V1,v50,fine,T1\WObj:=DruckbettV4;
+        
+        %"main3DP"%;
+        !MoveAbsJ jHome,v200,fine,tool0\WObj:=wobj0;
+    ENDPROC
+ENDMODULE
