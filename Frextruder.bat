@@ -17,7 +17,7 @@ goto :schleife
 
 :gefunden
 echo.
-echo Raspberry Pi gefunden! 
+echo Raspberry Pi gefunden 
 echo IP-Adresse: %IP%
 echo Starte Browser...
 
