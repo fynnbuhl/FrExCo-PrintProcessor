@@ -6,6 +6,18 @@ Diese Erweiterung baut auf der Open-Source-Bibliothek `FullControl GCode Designe
 
 Die Standardversion von [FullControl](https://github.com/FullControlXYZ/fullcontrol) ist primär für konventionelle 3-Achs-Drucker konzipiert. Diese Arbeit erweitert das Framework um die Fähigkeit, komplexe Werkzeugorientierungen im Raum (Mehrachsen-Druck) zu berechnen und roboterkompatiblen G-Code unter Berücksichtigung spezifischer Hardware-Bedingungen und Steuerbefehle zu generieren.
 
+### Dateistruktur & Komponenten
+
+Das Repository umfasst folgende Hauptdateien zur Ausführung und Konfiguration des Drucksystems:
+
+* **`FrExCo-PrintProcessor.ipynb`** *Hauptskript zur G-Code-Generierung.* Verarbeitet die Geometriedaten und berechnet den non-planaren G-Code inklusive der erweiterten Werkzeugorientierungen (Vector/Euler-Winkel) für den Roboter.
+
+* **`TCP-Kalibrierung.ipynb`** *Werkzeug-Kalibrierskript.* Dient der präzisen Ermittlung und Berechnung der **TCP-Offsetkoordinaten** (Tool Center Point) des Extruders, um Kinematikfehler beim Schwenken des Roboters zu minimieren.
+
+* **`Frextruder.bat`** *Automatisierungs-Batchskript.* Ein Windows-Shell-Skript zum automatisierten Starten und Öffnen der FrExCo-Weboberfläche für die Steuerung der Extrudereinheit.
+
+> **Hinweis:** Eine detaillierte Schritt-für-Schritt-Anleitung zur Inbetriebnahme und Nutzung der einzelnen Skripte entnehmen Sie bitte dem Begleitdokument **„Anleitung 3D-FREXCO“**.
+
 ---
 
 # 2. Konzeptionelle Erweiterung & Architektur
